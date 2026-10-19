@@ -1,0 +1,185 @@
+name: fieldnote
+services:
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_DB: fieldnote
+      POSTGRES_USER: fieldnote
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Copy .env.example to .env and set secrets}
+      KEYCLOAK_DB_PASSWORD: change-this-local-keycloak-db-password
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./infra/postgres-init.sql:/docker-entrypoint-initdb.d/10-keycloak.sql:ro
+    healthcheck:
+      test: ["CMD-SHELL","pg_isready -U fieldnote -d fieldnote"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+    restart: unless-stopped
+
+  redis:
+    image: redis:7-alpine
+    command: ["redis-server","--appendonly","yes","--requirepass","${REDIS_PASSWORD:?Set Redis password}"]
+    volumes: ["redis_data:/data"]
+    healthcheck:
+      test: ["CMD-SHELL","redis-cli -a \"$$REDIS_PASSWORD\" ping | grep PONG"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+    environment:
+      REDIS_PASSWORD: ${REDIS_PASSWORD:?Set Redis password}
+    restart: unless-stopped
+
+  minio:
+    image: localstack/localstack:3.8.1
+    environment:
+      SERVICES: s3
+      AWS_DEFAULT_REGION: us-east-1
+      AWS_ACCESS_KEY_ID: ${MINIO_ROOT_USER:-fieldnote-local}
+      AWS_SECRET_ACCESS_KEY: ${MINIO_ROOT_PASSWORD:?Set MinIO password}
+    volumes: ["minio_data:/var/lib/localstack"]
+    healthcheck:
+      test: ["CMD-SHELL","curl -fsS http://127.0.0.1:4566/_localstack/health >/dev/null"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+    restart: unless-stopped
+
+  keycloak:
+    image: quay.io/keycloak/keycloak:26.2
+    command: ["start-dev","--import-realm"]
+    environment:
+      KC_DB: postgres
+      KC_DB_URL_HOST: postgres
+      KC_DB_URL_DATABASE: keycloak
+      KC_DB_USERNAME: keycloak
+      KC_DB_PASSWORD: change-this-local-keycloak-db-password
+      KC_HTTP_ENABLED: "true"
+      KC_HOSTNAME: http://localhost:8081
+      KC_HOSTNAME_STRICT: "false"
+      KC_HEALTH_ENABLED: "true"
+      KC_BOOTSTRAP_ADMIN_USERNAME: ${KEYCLOAK_ADMIN:-admin}
+      KC_BOOTSTRAP_ADMIN_PASSWORD: ${KEYCLOAK_ADMIN_PASSWORD:?Set Keycloak admin password}
+    volumes:
+      - ./infra/keycloak/fieldnote-realm.json:/opt/keycloak/data/import/fieldnote-realm.json:ro
+    ports: ["127.0.0.1:8081:8080"]
+    depends_on:
+      postgres: {condition: service_healthy}
+    restart: unless-stopped
+
+  zap:
+    image: ghcr.io/zaproxy/zaproxy:stable
+    command: ["zap.sh","-daemon","-host","0.0.0.0","-port","8080","-config","api.key=${ZAP_API_KEY:?Set ZAP API key}","-config","api.addrs.addr.name=.*","-config","api.addrs.addr.regex=true"]
+    expose: ["8080"]
+    restart: unless-stopped
+
+  api:
+    build: ./backend
+    environment: &backend_env
+      ENVIRONMENT: development
+      DATABASE_URL: postgresql+psycopg://fieldnote:${POSTGRES_PASSWORD}@postgres:5432/fieldnote
+      REDIS_URL: redis://:${REDIS_PASSWORD}@redis:6379/0
+      OIDC_ISSUER: http://localhost:8081/realms/fieldnote
+      OIDC_AUDIENCE: fieldnote-api
+      OIDC_JWKS_URL: http://keycloak:8080/realms/fieldnote/protocol/openid-connect/certs
+      OIDC_DEV_TENANT: demo-agency
+      REQUIRE_MFA: "false"
+      S3_ENDPOINT_URL: http://minio:4566
+      S3_REGION: us-east-1
+      S3_BUCKET: fieldnote-evidence
+      S3_ACCESS_KEY: ${MINIO_ROOT_USER:-fieldnote-local}
+      S3_SECRET_KEY: ${MINIO_ROOT_PASSWORD}
+      EVIDENCE_ENCRYPTION_KEY: ${EVIDENCE_ENCRYPTION_KEY:?Generate a base64 32-byte evidence key}
+      ZAP_API_URL: http://zap:8080
+      ZAP_API_KEY: ${ZAP_API_KEY}
+      NVD_API_KEY: ${NVD_API_KEY:-}
+      NMAP_MAX_RATE: 20
+      OTEL_EXPORTER_OTLP_ENDPOINT: http://otel-collector:4317
+    command: ["sh","-c","alembic upgrade head && uvicorn app.main:app --host 0.0.0.0 --port 8000 --proxy-headers"]
+    depends_on:
+      postgres: {condition: service_healthy}
+      redis: {condition: service_healthy}
+      minio: {condition: service_started}
+      keycloak: {condition: service_started}
+      otel-collector: {condition: service_started}
+    ports: ["127.0.0.1:8000:8000"]
+    restart: unless-stopped
+
+  scan-worker:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile.scan-worker
+    environment: *backend_env
+    depends_on:
+      postgres: {condition: service_healthy}
+      redis: {condition: service_healthy}
+      minio: {condition: service_started}
+      zap: {condition: service_started}
+    restart: unless-stopped
+
+  feed-worker:
+    build: ./backend
+    command: ["celery","-A","app.workers.celery_app:celery","worker","-Q","feeds","-l","INFO","--concurrency=1"]
+    environment: *backend_env
+    depends_on:
+      postgres: {condition: service_healthy}
+      redis: {condition: service_healthy}
+    restart: unless-stopped
+
+  celery-beat:
+    build: ./backend
+    command: ["celery","-A","app.workers.celery_app:celery","beat","-l","INFO"]
+    environment: *backend_env
+    depends_on:
+      postgres: {condition: service_healthy}
+      redis: {condition: service_healthy}
+    restart: unless-stopped
+
+  frontend:
+    build:
+      context: .
+      dockerfile: frontend/Dockerfile
+    ports: ["127.0.0.1:8080:80"]
+    depends_on: [api]
+    restart: unless-stopped
+
+  otel-collector:
+    image: otel/opentelemetry-collector-contrib:0.121.0
+    command: ["--config=/etc/otelcol-contrib/config.yaml"]
+    volumes: ["./infra/otel/collector.yaml:/etc/otelcol-contrib/config.yaml:ro"]
+    depends_on: [loki,tempo]
+    expose: ["4317","4318"]
+    restart: unless-stopped
+
+  loki:
+    image: grafana/loki:3.4.2
+    command: ["-config.file=/etc/loki/local-config.yaml"]
+    volumes: ["./infra/loki.yaml:/etc/loki/local-config.yaml:ro","loki_data:/loki"]
+    expose: ["3100"]
+    restart: unless-stopped
+
+  tempo:
+    image: grafana/tempo:2.7.1
+    command: ["-config.file=/etc/tempo.yaml"]
+    volumes: ["./infra/tempo.yaml:/etc/tempo.yaml:ro","tempo_data:/var/tempo"]
+    expose: ["3200","4317"]
+    restart: unless-stopped
+
+  grafana:
+    image: grafana/grafana:11.5.2
+    environment:
+      GF_SECURITY_ADMIN_USER: admin
+      GF_SECURITY_ADMIN_PASSWORD: ${GRAFANA_PASSWORD:-change-this-local-grafana-password}
+      GF_USERS_ALLOW_SIGN_UP: "false"
+    volumes: ["./infra/grafana-datasources.yaml:/etc/grafana/provisioning/datasources/datasources.yaml:ro","grafana_data:/var/lib/grafana"]
+    ports: ["127.0.0.1:3000:3000"]
+    depends_on: [loki,tempo]
+    restart: unless-stopped
+
+volumes:
+  postgres_data:
+  redis_data:
+  minio_data:
+  loki_data:
+  tempo_data:
+  grafana_data:

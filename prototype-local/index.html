@@ -1,0 +1,82 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="theme-color" content="#142a24">
+  <title>Fieldnote | Security Assurance Program</title><link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<div class="app-shell">
+  <aside class="sidebar">
+    <a class="brand" href="#overview"><span class="brand-mark">F</span><span>fieldnote<span class="brand-dot">.</span><small>SECURITY ASSURANCE</small></span></a>
+    <div class="agency-switch"><span class="crest">Z</span><span><b>Agency workspace</b><small>CYBER SECURITY OFFICE</small></span><span class="switch-arrow">⌄</span></div>
+    <div class="workspace-label">PROGRAM</div>
+    <nav class="main-nav" aria-label="Main navigation">
+      <button class="nav-link active" data-view="overview"><span class="nav-icon">▦</span> Program overview</button>
+      <button class="nav-link" data-view="engagements"><span class="nav-icon">◷</span> Assessments <span class="nav-count" id="engagementCount">0</span></button>
+      <button class="nav-link" data-view="authorizations"><span class="nav-icon">▤</span> Authorizations <span class="nav-count alert-count" id="approvalCount">0</span></button>
+      <button class="nav-link" data-view="assets"><span class="nav-icon">◎</span> Asset register</button>
+      <button class="nav-link" data-view="scanning"><span class="nav-icon">⌕</span> Recon &amp; scans</button>
+      <button class="nav-link" data-view="checks"><span class="nav-icon">☷</span> Web &amp; API checks</button>
+      <button class="nav-link" data-view="validation"><span class="nav-icon">✓</span> Validation controls</button>
+      <button class="nav-link" data-view="findings"><span class="nav-icon">◈</span> Risk &amp; findings <span class="nav-count" id="riskCount">0</span></button>
+      <button class="nav-link" data-view="audit"><span class="nav-icon">≡</span> Audit trail</button>
+    </nav>
+    <div class="sidebar-bottom"><div class="secure-card"><span>⬡</span><div><b>Controlled workspace</b><p>Assessment records are sensitive. Handle under agency policy.</p></div></div><div class="profile"><div class="avatar">JD</div><div><b>Jordan Davis</b><small>Program coordinator</small></div><button class="icon-button" aria-label="User menu">···</button></div></div>
+  </aside>
+  <main class="main-area">
+    <header class="topbar"><div class="breadcrumbs"><span>Cyber Security Office</span><span class="crumb-sep">/</span><b id="currentCrumb">Program overview</b></div><div class="top-actions"><span class="period-label">FY 2026 / 27</span><button class="button button-outline" id="exportProgram">↗ <span>Export summary</span></button><button class="button button-primary" id="newEngagement">＋ <span>New assessment</span></button></div></header>
+    <div class="content-wrap">
+      <section class="page-view active" id="view-overview">
+        <div class="page-heading"><div><div class="eyebrow">CYBER SECURITY OFFICE <span>·</span> PROGRAM CONTROL <span class="status-pill" id="sampleBadge">SAMPLE DATA</span></div><h1>Security assurance program</h1><p class="page-subtitle">Coordinate authorized testing across units, systems, and service providers.</p></div><div class="updated-label"><i></i> Connecting to Python…</div></div>
+        <div class="overview-banner"><div><div class="banner-kicker">AGENCY WORKSPACE <span>•</span> ZIMBABWE</div><h2>Operational technology &amp; digital services</h2><p>Central view of assessment coverage, approvals, and remediation accountability.</p></div><div class="banner-mark">⌑</div></div>
+        <div class="stats-grid"><article class="stat-card"><div class="stat-top"><span>Active assessments</span><span class="stat-icon blue">◷</span></div><strong id="activeMetric">0</strong><small>Across all participating units</small></article><article class="stat-card"><div class="stat-top"><span>Systems in register</span><span class="stat-icon violet">◎</span></div><strong id="assetMetric">0</strong><small>Recorded service and system assets</small></article><article class="stat-card"><div class="stat-top"><span>Approvals required</span><span class="stat-icon amber">▤</span></div><strong id="approvalMetric">0</strong><small>Authorization workflow queue</small></article><article class="stat-card"><div class="stat-top"><span>Open priority risks</span><span class="stat-icon red">↑</span></div><strong id="riskMetric">0</strong><small>High and critical open findings</small></article></div>
+        <div class="overview-grid"><section class="panel"><div class="panel-heading"><div><h3>Assessments by unit</h3><p>Current program workload</p></div><button class="text-button" data-goto="engagements">All assessments →</button></div><div id="unitCoverage" class="unit-coverage"></div></section><section class="panel"><div class="panel-heading"><div><h3>Approval queue</h3><p>Authorization and scope decisions</p></div><button class="text-button" data-goto="authorizations">Review queue →</button></div><div id="approvalPreview" class="approval-preview"></div></section></div>
+        <section class="panel"><div class="panel-heading"><div><h3>Program portfolio</h3><p>Assessment status, ownership, and schedule</p></div><button class="text-button" data-goto="engagements">View all →</button></div><div class="table-wrap"><table><thead><tr><th>ASSESSMENT</th><th>UNIT / OWNER</th><th>TYPE</th><th>STATUS</th><th>PERIOD</th><th></th></tr></thead><tbody id="portfolioRows"></tbody></table></div></section>
+        <div class="footer-note">Fieldnote <span>·</span> Organizational workspace prototype <span>·</span> Records stored in this browser</div>
+      </section>
+      <section class="page-view" id="view-engagements">
+        <div class="page-heading"><div><div class="eyebrow">PROGRAM PORTFOLIO</div><h1>Assessments</h1><p class="page-subtitle">Plan and track approved security reviews across the organization.</p></div><button class="button button-primary" id="newEngagement2">＋ <span>New assessment</span></button></div>
+        <div class="filter-row"><div class="search-box">⌕ <input id="engagementSearch" placeholder="Search assessments, units, owners…"></div><select id="engagementFilter"><option value="all">All statuses</option><option>Planning</option><option>Awaiting approval</option><option>Active</option><option>Reporting</option><option>Closed</option></select></div>
+        <section class="panel"><div class="table-wrap"><table><thead><tr><th>ASSESSMENT</th><th>UNIT / OWNER</th><th>TYPE</th><th>STATUS</th><th>PERIOD</th><th>AUTHORIZATION</th></tr></thead><tbody id="engagementRows"></tbody></table></div></section>
+      </section>
+      <section class="page-view" id="view-authorizations">
+        <div class="page-heading"><div><div class="eyebrow">GOVERNANCE &amp; PERMISSION</div><h1>Authorization register</h1><p class="page-subtitle">Track approvals, scope boundaries, expiry dates, and accountable signatories.</p></div><button class="button button-primary" id="newAuthorization">＋ <span>Record authorization</span></button></div>
+        <div class="notice"><span>▤</span><div><b>Authorization is a prerequisite to testing</b><p>Confirm the accountable system owner, approved targets, test window, exclusions, and escalation contact before work begins.</p></div></div>
+        <div id="authorizationCards" class="authorization-list"></div>
+      </section>
+      <section class="page-view" id="view-assets">
+        <div class="page-heading"><div><div class="eyebrow">ORGANIZATIONAL INVENTORY</div><h1>Asset register</h1><p class="page-subtitle">Keep systems, service owners, and assessment coverage visible in one place.</p></div><button class="button button-primary" id="newAsset">＋ <span>Register asset</span></button></div>
+        <div class="notice neutral"><span>◎</span><div><b>Inventory details are sensitive</b><p>Store only the minimum operational information needed for assessment coordination. Do not put credentials or live vulnerability payloads in this register.</p></div></div>
+        <div class="filter-row"><div class="search-box">⌕ <input id="assetSearch" placeholder="Search assets, owners, or units…"></div><select id="assetUnitFilter"><option value="all">All units</option></select></div>
+        <section class="panel"><div class="table-wrap"><table><thead><tr><th>SYSTEM / SERVICE</th><th>EXACT AUTHORIZED TARGET</th><th>UNIT</th><th>SERVICE OWNER</th><th>CRITICALITY</th><th>ASSESSMENT</th><th></th></tr></thead><tbody id="assetRows"></tbody></table></div></section>
+      </section>
+      <section class="page-view" id="view-scanning">
+        <div class="page-heading"><div><div class="eyebrow">AUTHORIZED DISCOVERY</div><h1>Recon &amp; network checks</h1><p class="page-subtitle">Resolve and check one explicitly registered host at a time.</p></div></div>
+        <div class="notice"><span>⌑</span><div><b>Scope and approval gates are enforced on the server</b><p>Checks require an exact registered target, an active assessment, current written authorization that names the target, and a valid testing window. Port checks are limited TCP connection probes; no exploitation, brute force, or broad range scanning.</p></div></div>
+        <section class="panel scanner-panel"><div class="panel-heading"><div><h3>Authorized target</h3><p>Choose a registered asset; targets cannot be typed into a scan request.</p></div></div><div class="scan-controls"><div class="field"><label>Asset / exact target</label><select id="scanAsset"></select></div><div class="field"><label>Action</label><select id="scanAction"><option value="dns">DNS resolution</option><option value="ports">Limited TCP port check</option><option value="web">HTTP security headers &amp; TLS</option></select></div><button class="button button-primary" id="runScan">▶ <span>Run authorized check</span></button></div><div id="portOptions" class="port-options" hidden></div><div id="scanGate" class="gate-message"></div><div id="scanOutput" class="scan-output"><div class="empty-state"><span class="empty-icon">⌕</span><b>No check run yet</b><span>Check the authorization register and asset target first.</span></div></div></section>
+        <section class="panel"><div class="panel-heading"><div><h3>Check history</h3><p>Results saved with the assessment activity record</p></div></div><div id="scanHistory" class="scan-history"></div></section>
+      </section>
+      <section class="page-view" id="view-checks">
+        <div class="page-heading"><div><div class="eyebrow">MANUAL TEST PLAN</div><h1>Web &amp; API checks</h1><p class="page-subtitle">Track authentication, authorization, session, and input-handling checks without storing credentials.</p></div></div>
+        <div class="notice neutral"><span>☷</span><div><b>Use approved test accounts and non-sensitive evidence</b><p>This checklist records assessor work. It does not submit attack payloads, guess passwords, or capture live user data.</p></div></div>
+        <div class="checklist-toolbar"><div id="checksSummary" class="checklist-summary"></div><select id="checksFilter"><option value="all">All checks</option><option value="todo">Not started</option><option value="done">Completed</option><option value="na">Not applicable</option></select></div><div id="securityChecklist" class="test-plan-groups"></div>
+      </section>
+      <section class="page-view" id="view-validation">
+        <div class="page-heading"><div><div class="eyebrow">SUPERVISOR-GATED WORKFLOW</div><h1>Controlled validation</h1><p class="page-subtitle">Document a proposed validation and require an approval decision before it proceeds.</p></div><button class="button button-primary" id="newValidation">＋ <span>Request validation</span></button></div>
+        <div class="notice"><span>✓</span><div><b>No exploit launcher is provided</b><p>Use only an agency-approved validation procedure in an approved test window. Keep proof minimal, avoid persistence or data extraction, and record who authorized and witnessed the work.</p></div></div>
+        <div id="validationList" class="authorization-list"></div>
+      </section>
+      <section class="page-view" id="view-findings">
+        <div class="page-heading"><div><div class="eyebrow">REMEDIATION ACCOUNTABILITY</div><h1>Risk &amp; findings</h1><p class="page-subtitle">Prioritize remediation, assign ownership, and track closure evidence.</p></div><div class="heading-actions"><button class="button button-outline" id="generateReport">↗ <span>Generate report</span></button><button class="button button-primary" id="newFinding">＋ <span>Record finding</span></button></div></div>
+        <div class="risk-band" id="riskBands"></div><div class="filter-row"><div class="search-box">⌕ <input id="riskSearch" placeholder="Search findings…"></div><select id="riskStatusFilter"><option value="all">All statuses</option><option>Open</option><option>In progress</option><option>Risk accepted</option><option>Closed</option></select></div><div id="riskCards" class="risk-list"></div>
+      </section>
+      <section class="page-view" id="view-audit">
+        <div class="page-heading"><div><div class="eyebrow">ACCOUNTABILITY &amp; TRACEABILITY</div><h1>Audit trail</h1><p class="page-subtitle">A chronological record of changes made in this workspace.</p></div><button class="button button-outline" id="exportAudit">↗ <span>Export log</span></button></div>
+        <div class="notice neutral"><span>≡</span><div><b>Local prototype audit log</b><p>This log records app actions on this device. A deployed organization system requires server-side immutable logging and approved identity controls.</p></div></div>
+        <section class="panel"><div id="auditRows" class="audit-list"></div></section>
+      </section>
+    </div>
+  </main>
+</div>
+<div id="modalRoot"></div><div id="toast" class="toast" role="status"></div><script src="app.js"></script>
+</body></html>

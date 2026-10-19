@@ -1,0 +1,12 @@
+export type Id = string
+export type Assessment = {id:Id;name:string;unit:string;owner:string;kind:string;status:string;start_date:string;end_date:string;objective:string}
+export type Asset = {id:Id;assessment_id:Id|null;name:string;target:string;web_url:string;unit:string;service_owner:string;asset_type:string;criticality:string;environment:string}
+export type Authorization = {id:Id;assessment_id:Id;authority_reference:string;system_owner:string;target_allowlist:string[];exclusions:string[];start_date:string;end_date:string;daily_start:string;daily_end:string;weekdays_only:boolean;timezone_name:string;status:string;approved_by?:string|null}
+export type Finding = {id:Id;assessment_id:Id;asset_id:Id;title:string;severity:string;cvss_base:number|null;business_impact:string;cve_id:string|null;status:string;remediation_owner:string;due_date:string|null;summary:string;evidence_refs:string[]}
+export type ScanJob = {id:Id;assessment_id:Id;asset_id:Id;kind:string;status:string;result_summary:Record<string,any>;error?:string|null;created_at:string}
+export type Validation = {id:Id;assessment_id:Id;finding_id:Id;asset_id:Id;purpose:string;procedure_reference:string;proposed_window:string;status:string;requester:string;reviewer?:string|null;outcome?:string|null}
+export type TestCheck = {id:Id;assessment_id:Id;category:string;title:string;status:string;evidence_reference:string;assessor_note:string}
+export type Evidence = {id:Id;filename:string;size_bytes:number;sha256:string;encrypted:boolean;source_tool:string;analysis:Record<string,any>;created_at:string;assessment_id:Id;finding_id?:Id|null}
+export type CVE = {cve_id:string;description:string;cvss_base:number|null;severity:string;cpes:string[];published_at:string|null}
+export type AuditEvent = {id:Id;actor:string;action:string;resource_type:string;resource_id:string;detail:Record<string,unknown>;created_at:string}
+export type Summary = {assessments:Assessment[];asset_count:number;finding_count:number;pending_authorizations:number;priority_risks:number}

@@ -1,0 +1,17 @@
+FROM kalilinux/kali-rolling
+
+ENV DEBIAN_FRONTEND=noninteractive PYTHONDONTWRITEBYTECODE=1 PYTHONUNBUFFERED=1 PIP_NO_CACHE_DIR=1
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    python3 python3-venv python3-pip ca-certificates nmap sqlmap metasploit-framework john hashcat hydra pocl-opencl-icd \
+    && python3 -m venv /opt/fieldnote-venv \
+    && apt-get clean && rm -rf /var/lib/apt/lists/*
+ENV PATH="/opt/fieldnote-venv/bin:${PATH}"
+WORKDIR /srv/fieldnote
+COPY backend/requirements.txt ./requirements.txt
+RUN pip install --no-cache-dir -r requirements.txt
+COPY backend/app ./app
+COPY backend/alembic ./alembic
+COPY backend/alembic.ini ./alembic.ini
+RUN useradd --create-home --uid 10001 fieldnote && chown -R fieldnote:fieldnote /srv/fieldnote
+USER 10001:10001
+CMD ["celery","-A","app.workers.celery_app:celery","worker","-Q","scans","-l","INFO","--concurrency=1","--prefetch-multiplier=1"]

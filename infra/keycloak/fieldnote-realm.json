@@ -1,0 +1,36 @@
+{
+  "realm": "fieldnote",
+  "enabled": true,
+  "displayName": "HydraShagy Local Development",
+  "sslRequired": "none",
+  "registrationAllowed": false,
+  "loginWithEmailAllowed": false,
+  "rememberMe": false,
+  "roles": {"realm": [
+    {"name":"program_manager"},{"name":"security_analyst"},{"name":"authorization_approver"},
+    {"name":"scanner_operator"},{"name":"validation_approver"},{"name":"evidence_custodian"},
+    {"name":"remediation_owner"},{"name":"auditor"}
+  ]},
+  "clientScopes": [
+    {"name":"api-audience","protocol":"openid-connect","protocolMappers":[{"name":"fieldnote-api-audience","protocol":"openid-connect","protocolMapper":"oidc-audience-mapper","consentRequired":false,"config":{"included.client.audience":"fieldnote-api","id.token.claim":"false","access.token.claim":"true","userinfo.token.claim":"false"}}]},
+    {"name":"organization","protocol":"openid-connect","protocolMappers":[{"name":"organization-id","protocol":"openid-connect","protocolMapper":"oidc-usermodel-attribute-mapper","consentRequired":false,"config":{"user.attribute":"organization_id","claim.name":"organization_id","jsonType.label":"String","id.token.claim":"false","access.token.claim":"true","userinfo.token.claim":"true","multivalued":"false"}}]}
+  ],
+  "clients": [{
+    "clientId":"fieldnote-ui","name":"Fieldnote Web","enabled":true,"protocol":"openid-connect","publicClient":true,
+    "standardFlowEnabled":true,"directAccessGrantsEnabled":false,"implicitFlowEnabled":false,"serviceAccountsEnabled":false,
+    "redirectUris":["http://localhost:8080/*","http://localhost:5173/*"],"webOrigins":["http://localhost:8080","http://localhost:5173"],
+    "attributes":{"pkce.code.challenge.method":"S256","post.logout.redirect.uris":"http://localhost:8080##http://localhost:5173"},
+    "defaultClientScopes":["organization","api-audience"]
+  }],
+  "users": [{
+    "username":"analyst","enabled":true,"emailVerified":true,"firstName":"Local","lastName":"Analyst",
+    "attributes":{"organization_id":["demo-agency"]},
+    "credentials":[{"type":"password","value":"ChangeMe123!","temporary":false}],
+    "realmRoles":["security_analyst","scanner_operator","evidence_custodian"]
+  },{
+    "username":"approver","enabled":true,"emailVerified":true,"firstName":"Local","lastName":"Approver",
+    "attributes":{"organization_id":["demo-agency"]},
+    "credentials":[{"type":"password","value":"ChangeMe123!","temporary":false}],
+    "realmRoles":["program_manager","authorization_approver","validation_approver","auditor"]
+  }]
+}

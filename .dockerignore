@@ -1,0 +1,15 @@
+.git
+.env
+**/__pycache__
+**/.pytest_cache
+**/node_modules
+**/dist
+**/.env*
+!**/.env.example
+**/*.sqlite*
+**/*.db
+vendor
+prototype-local
+*.log
+*.pem
+*.key
